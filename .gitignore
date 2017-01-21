@@ -1,1 +1,9 @@
 .DS_Store
+dosbox_home/MASM611
+CURRENT.STS
+*.BAK
+*.EXE
+*.OBJ
+*.MAK
+*.VMM
+/dosbox_home/exercise/**/temp.conf
