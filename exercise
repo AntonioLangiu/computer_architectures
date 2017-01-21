@@ -1,0 +1,149 @@
+#!/bin/bash
+set -e
+
+# Options to be setted for the script
+base_dir=$(cd `dirname "$0"` && pwd -P)
+base_ex_dir="exercise"
+proj_dir="$base_dir/dosbox_home/$base_ex_dir"
+
+asm_file_name="ex.asm"
+c_file_name="ex.c"
+
+dosbox_exec="open -n -a DOSBOX"
+dosbox_param="--args -conf"
+dosbox_kill="killall DOSBox"
+dosbox_home="/Users/autogen/computer_architectures/dosbox_home/"
+dosbox_noscript_conf="$base_dir/noscript.conf"
+dosbox_temp_conf_name="temp.conf"
+
+function create {
+    if [ "$1" == "" ]; then
+        echo "you should give a name for the exercise"
+    fi
+
+    mkdir "$1" || (echo "impossible to create $1"; exit 1)
+cat <<-EOF > "$1/$asm_file_name"
+        .MODEL small
+        .STACK
+        .DATA
+
+        .CODE
+        .STARTUP
+
+        .EXIT
+        END
+EOF
+    if [ "$2" == "-c" ]; then 
+cat <<EOF > "$1/$c_file_name"
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char ** argv) {
+    return 0;   
+}
+EOF
+    fi
+}
+
+function delete {
+    if [ "$1" == "" ]; then
+        echo "you should give a name for the exercise"
+    fi
+    # TODO add check
+dosbox_noscript_conf="noscript.conf"
+    rm -r "$1" || echo "I can't remove the specified folder!"
+}
+
+function clean {
+    rm "$1/$dosbox_temp_conf_name"
+}
+
+function compile {
+    if [ "$1" == "" ]; then
+        echo "you should give a name for the exercise"
+        return 
+    fi
+    ex_dir="$proj_dir/$1"
+    # start compile asm
+}
+
+function killcmd {
+    $dosbox_kill
+}
+
+function debug {
+    if [ ! -f "$dosbox_noscript_conf" ]; then
+        echo "set a correct noscript_conf file in the script"
+    fi
+    if [ "$1" == "" ]; then
+        echo "you should give a name for the exercise"
+        return
+    fi
+    temp_conf="$1/$dosbox_temp_conf_name"
+    # This will override the previous content
+    cp "$dosbox_noscript_conf" "$temp_conf"
+cat <<-EOF >> "$temp_conf"
+mount c $dosbox_home
+PATH=Z:\;C:\MASM611\BIN
+c:
+CD $base_ex_dir\\$ex_name
+PWB $asm_file_name
+EOF
+    cmd="$dosbox_exec $dosbox_param $temp_conf"
+    $cmd
+
+}
+
+function usage {
+    echo "usage: $0 test_name [operations]"
+}
+
+function commands {
+    echo "Available operations for test $1 are:"
+    echo "  create"
+    echo "  delete"
+    echo "  debug"
+    echo "  build"
+}
+
+if [ ! -d "$proj_dir" ]; then
+    mkdir -p "$proj_dir"
+fi
+
+if [ $# -lt 1 ]; then
+    usage
+    exit 1
+fi
+ex_name="ex_$1"
+ex_dir="$proj_dir/$ex_name"
+shift
+if [ $# -lt 1 ]; then
+    commands $ex_name
+    exit 0
+fi
+case "$1" in
+    create)
+        create $ex_dir $@
+        ;;
+    delete) 
+        delete $ex_dir $@
+        ;;
+    debug)
+        debug $ex_dir $@
+        ;;
+    clean) 
+        clean $ex_dir
+        ;;
+    kill)
+        killcmd
+        ;;
+    cd)
+        cd $ex_dir
+        echo "type exit to return to the previous shell"
+        PS1="EXERCISE:$ex_name > " bash
+        ;;
+    *)
+        commands $ex_name
+        exit 0
+esac
+exit 1
