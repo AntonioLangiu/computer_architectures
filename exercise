@@ -7,6 +7,7 @@ base_ex_dir="exercise"
 proj_dir="$base_dir/dosbox_home/$base_ex_dir"
 
 asm_file_name="EX.ASM"
+exe_file_name="EX.EXE"
 c_file_name="ex.c"
 
 dosbox_exec="open -n -a DOSBOX"
@@ -84,10 +85,16 @@ function debug {
     cp "$dosbox_noscript_conf" "$temp_conf"
 cat <<-EOF >> "$temp_conf"
 mount c $dosbox_home
-PATH=Z:\;C:\MASM611\BIN
 c:
-CD $base_ex_dir\\$ex_name
-PWB $asm_file_name
+SET PATH=C:\MASM611\BIN;C:\MASM611\BINR;%PATH%
+SET INCLUDE=C:\MASM611\INCLUDE
+SET INIT=C:\MASM611\INIT;%INIT%
+SET HELPFILES=C:\MASM611\HELP\*.HLP
+SET TMP=C:\MASM611\TMP
+cd $base_ex_dir\\$ex_name
+ml /Zi $asm_file_name
+cv $exe_file_name
+
 EOF
     cmd="$dosbox_exec $dosbox_param $temp_conf"
     $cmd
