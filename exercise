@@ -17,6 +17,8 @@ dosbox_home="/Users/autogen/computer_architectures/dosbox_home/"
 dosbox_noscript_conf="$base_dir/noscript.conf"
 dosbox_temp_conf_name="temp.conf"
 
+editor="vim"
+
 function create {
     if [ "$1" == "" ]; then
         echo "you should give a name for the exercise"
@@ -70,6 +72,28 @@ function compile {
 
 function killcmd {
     $dosbox_kill
+}
+
+function edit {
+    $editor "$1/$asm_file_name"
+}
+
+function doc {
+    doc="$1/README.md"
+    if [ -f $doc ]; then
+        if [ "$3" == "-s" ]; then
+            cat $doc
+            return
+        fi
+        $editor "$doc"
+        return
+    fi
+cat <<EOF > $doc
+# Exercise $ex_name
+
+## Description
+EOF
+    cat <&0 >> $doc
 }
 
 function debug {
@@ -143,6 +167,12 @@ case "$1" in
         ;;
     kill)
         killcmd
+        ;;
+    edit)
+        edit $ex_dir
+        ;;
+    doc)
+        doc $ex_dir $@
         ;;
     cd)
         cd $ex_dir
