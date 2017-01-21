@@ -107,10 +107,12 @@ function debug {
     val=""
     if [ "$2" == "-w" ];then
         watches=$(cat "$1/EX.ASM" | grep -E "DB|DW" | cut -f 1 -d " ")
-        for watch in "${watches[@]}"; do
-            val="/CW?$watch $val"
-        done
+        while IFS=' ' read -r f
+        do
+            val="/CW?$f $val"
+        done <<< "$watches"
         val="/CWC* $val"
+        echo "Watches: "$val
     fi
     temp_conf="$1/$dosbox_temp_conf_name"
     # This will override the previous content
@@ -217,6 +219,9 @@ case "$cmd" in
         ;;
     doc)
         doc $ex_dir $@
+        ;;
+    rename)
+        mv "$ex_dir" "$proj_dir/ex_$1"
         ;;
     cd)
         cd $ex_dir
