@@ -13,7 +13,7 @@ c_file_name="ex.c"
 dosbox_exec="open -n -a DOSBOX"
 dosbox_param="--args -conf"
 dosbox_kill="killall DOSBox"
-dosbox_home="/Users/autogen/computer_architectures/dosbox_home/"
+dosbox_home="$base_dir/dosbox_home/"
 dosbox_noscript_conf="$base_dir/noscript.conf"
 dosbox_temp_conf_name="temp.conf"
 
@@ -104,6 +104,14 @@ function debug {
         echo "you should give a name for the exercise"
         return
     fi
+    val=""
+    if [ "$2" == "-w" ];then
+        watches=$(cat "$1/EX.ASM" | grep -E "DB|DW" | cut -f 1 -d " ")
+        for watch in "${watches[@]}"; do
+            val="/CW?$watch $val"
+        done
+        val="/CWC* $val"
+    fi
     temp_conf="$1/$dosbox_temp_conf_name"
     # This will override the previous content
     cp "$dosbox_noscript_conf" "$temp_conf"
@@ -117,7 +125,34 @@ SET HELPFILES=C:\MASM611\HELP\*.HLP
 SET TMP=C:\MASM611\TMP
 cd $base_ex_dir\\$ex_name
 ml /Zi $asm_file_name
-cv $exe_file_name
+cv $val $exe_file_name
+
+EOF
+    cmd="$dosbox_exec $dosbox_param $temp_conf"
+    $cmd
+}
+
+function pwb {
+    if [ ! -f "$dosbox_noscript_conf" ]; then
+        echo "set a correct noscript_conf file in the script"
+    fi
+    if [ "$1" == "" ]; then
+        echo "you should give a name for the exercise"
+        return
+    fi
+    temp_conf="$1/$dosbox_temp_conf_name"
+    # This will override the previous content
+    cp "$dosbox_noscript_conf" "$temp_conf"
+cat <<-EOF >> "$temp_conf"
+mount c $dosbox_home
+c:
+SET PATH=C:\MASM611\BIN;C:\MASM611\BINR;%PATH%
+SET INCLUDE=C:\MASM611\INCLUDE
+SET INIT=C:\MASM611\INIT;%INIT%
+SET HELPFILES=C:\MASM611\HELP\*.HLP
+SET TMP=C:\MASM611\TMP
+cd $base_ex_dir\\$ex_name
+pwb $asm_file_name
 
 EOF
     cmd="$dosbox_exec $dosbox_param $temp_conf"
@@ -156,7 +191,9 @@ if [ $# -lt 1 ]; then
     commands $ex_name
     exit 0
 fi
-case "$1" in
+cmd=$1
+shift
+case "$cmd" in
     create)
         create $ex_dir $@
         ;;
@@ -165,6 +202,9 @@ case "$1" in
         ;;
     debug)
         debug $ex_dir $@
+        ;;
+    pwb)
+        pwb $ex_dir $@
         ;;
     clean) 
         clean $ex_dir
