@@ -6,7 +6,7 @@ base_dir=$(cd `dirname "$0"` && pwd -P)
 base_ex_dir="exercise"
 proj_dir="$base_dir/dosbox_home/$base_ex_dir"
 
-asm_file_name="ex.asm"
+asm_file_name="EX.ASM"
 c_file_name="ex.c"
 
 dosbox_exec="open -n -a DOSBOX"
