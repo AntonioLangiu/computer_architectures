@@ -145,6 +145,10 @@ if [ $# -lt 1 ]; then
     usage
     exit 1
 fi
+if [ "$1" == "list" ]; then
+    ls -l $proj_dir
+    exit 1
+fi
 ex_name="ex_$1"
 ex_dir="$proj_dir/$ex_name"
 shift
