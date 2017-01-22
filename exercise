@@ -106,7 +106,7 @@ function debug {
     fi
     val=""
     if [ "$2" == "-w" ];then
-        watches=$(cat "$1/EX.ASM" | grep -E "DB|DW" | cut -f 1 -d " ")
+        watches=$(cat "$1/EX.ASM" | grep -E "DB|DW|[^A]DD|DQ" | cut -f 1 -d " ")
         while IFS=' ' read -r f
         do
             val="/CW?$f $val"
@@ -114,21 +114,10 @@ function debug {
         val="/CWC* $val"
         echo "Watches: "$val
     fi
-    temp_conf="$1/$dosbox_temp_conf_name"
-    # This will override the previous content
-    cp "$dosbox_noscript_conf" "$temp_conf"
-cat <<-EOF >> "$temp_conf"
-mount c $dosbox_home
-c:
-SET PATH=C:\MASM611\BIN;C:\MASM611\BINR;%PATH%
-SET INCLUDE=C:\MASM611\INCLUDE
-SET INIT=C:\MASM611\INIT;%INIT%
-SET HELPFILES=C:\MASM611\HELP\*.HLP
-SET TMP=C:\MASM611\TMP
+create_temp_file $1 <<EOF
 cd $base_ex_dir\\$ex_name
 ml /Zi $asm_file_name
 cv $val $exe_file_name
-
 EOF
     cmd="$dosbox_exec $dosbox_param $temp_conf"
     $cmd
@@ -142,6 +131,28 @@ function pwb {
         echo "you should give a name for the exercise"
         return
     fi
+create_temp_file $1 <<EOF
+cd $base_ex_dir\\$ex_name
+pwb $asm_file_name
+EOF
+    cmd="$dosbox_exec $dosbox_param $temp_conf"
+    $cmd
+}
+
+function build {
+    if [ "$1" == "" ]; then
+        echo "you should give a name for the exercise"
+        return
+    fi
+create_temp_file $1 <<EOF
+cd $base_ex_dir\\$ex_name
+ml /Zi $asm_file_name
+EOF
+    cmd="$dosbox_exec $dosbox_param $temp_conf"
+    $cmd
+}
+
+function create_temp_file {
     temp_conf="$1/$dosbox_temp_conf_name"
     # This will override the previous content
     cp "$dosbox_noscript_conf" "$temp_conf"
@@ -153,13 +164,9 @@ SET INCLUDE=C:\MASM611\INCLUDE
 SET INIT=C:\MASM611\INIT;%INIT%
 SET HELPFILES=C:\MASM611\HELP\*.HLP
 SET TMP=C:\MASM611\TMP
-cd $base_ex_dir\\$ex_name
-pwb $asm_file_name
-
 EOF
-    cmd="$dosbox_exec $dosbox_param $temp_conf"
-    $cmd
 
+cat <&0 >> "$temp_conf"
 }
 
 function usage {
@@ -207,6 +214,9 @@ case "$cmd" in
         ;;
     pwb)
         pwb $ex_dir $@
+        ;;
+    build)
+        build $ex_dir $@
         ;;
     clean) 
         clean $ex_dir
