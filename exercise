@@ -3,7 +3,7 @@ set -e
 
 # Options to be setted for the script
 base_dir=$(cd `dirname "$0"` && pwd -P)
-base_ex_dir="exercise"
+base_ex_dir="exams"
 proj_dir="$base_dir/dosbox_home/$base_ex_dir"
 
 asm_file_name="EX.ASM"
@@ -193,7 +193,7 @@ if [ "$1" == "list" ]; then
     ls -l $proj_dir
     exit 1
 fi
-ex_name="ex_$1"
+ex_name="$1"
 ex_dir="$proj_dir/$ex_name"
 shift
 if [ $# -lt 1 ]; then
@@ -231,7 +231,7 @@ case "$cmd" in
         doc $ex_dir $@
         ;;
     rename)
-        mv "$ex_dir" "$proj_dir/ex_$1"
+        mv "$ex_dir" "$proj_dir/$1"
         ;;
     cd)
         cd $ex_dir

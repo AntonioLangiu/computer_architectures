@@ -7,4 +7,4 @@ CURRENT.STS
 *.MAK
 *.VMM
 *.CV4
-/dosbox_home/exercise/**/temp.conf
+/dosbox_home/**/temp.conf
