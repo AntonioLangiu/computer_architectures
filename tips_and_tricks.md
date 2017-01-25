@@ -135,8 +135,6 @@ can be saved because of reduced setup.
 
 ##7 Multiple Bit Testing
 
-
-
 Test for all four combinations of 2 bits of a flag byte in memory.
 
        mov      al,[Flag]
