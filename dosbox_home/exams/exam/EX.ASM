@@ -71,11 +71,12 @@ ok:     MOV [DI], AL
         ADD CAT_TOTAL_NET_PRICE[BP], AX
         ADD CAT_TOTAL_APPL_DISC[BP], BX
 
-        MOV BL, BYTE PTR [SI] ; useless
-        XOR BH, BH ; useless
-        SHL BX, 1 ; useless
-        SHL BX, 1 ; useless
-        MOV DH, CAT_TAX[BP] ; now in BH I have the category
+        MOV BL, BYTE PTR [SI]
+        XOR BH, BH
+        SHL BX, 1
+        SHL BX, 1
+        ; now in BH I have the category
+        MOV DH, CAT_TAX[BP]
         AND DH, 00011111B
         XOR DL, DL
         SHR DX, 1
