@@ -1,9 +1,9 @@
         .MODEL small
         .STACK
         .DATA
-CAT_TAX DB          4 DUP(?)
-NUM_PUR DB          ?
-PUR_OBJ DW          8 DUP(?)
+CAT_TAX DB          00H, 0BH, 019H, 05H
+NUM_PUR DB          2
+PUR_OBJ DW          02BB0H, 6 DUP(?)
 ; output variables
 TOTAL_FINAL_PRICE   DW ?
 TOTAL_DISCOUNT      DW ?
@@ -37,10 +37,9 @@ loop1:  MOV BX, [SI]
         MOV CX, 14
 loop2:  SHR DX, 1
         RCR AX, 1
-        CMP DX, 0
-        JNE loop2
-        JMP ok
+        LOOP loop2
         POP CX
+        JMP ok
 smaller: PUSH CX
         MOV CL, 6
         SHR AX, CL
@@ -55,15 +54,16 @@ ok:     MOV [DI], AL
         XOR CH, CL
         XOR CL, CH
         XOR CH, CL
+        XOR CH, CH
         
         XOR AH, AH
-        ADD TOTAL_DISCOUNT, AX
+        ADD TOTAL_NET_PRICE, AX
         MOV BL, BYTE PTR [SI]+1
         
-        SUB BL, AH ; in BL I have the net price
+        SUB BL, AL ; in BL I have the net price
         XOR BH, BH
         
-        ADD TOTAL_NET_PRICE, BX
+        ADD TOTAL_DISCOUNT, BX
         ; start calculating the total tax due
         XCHG AX, BX
         ; in BX I have the discount and in AX the net price
