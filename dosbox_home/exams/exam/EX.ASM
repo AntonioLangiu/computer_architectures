@@ -2,14 +2,14 @@
         .STACK
         .DATA
 CAT_TAX DB          4 DUP(?)
-NUM_PUR DB          (?)
+NUM_PUR DB          ?
 PUR_OBJ DW          8 DUP(?)
 ; output variables
-TOTAL_FINAL_PRICE   DW (?)
-TOTAL_DISCOUNT      DW (?)
-TOTAL_NET_PRICE     DW (?)
-TOTAL_TAX           DW (?)
-OUT                 DB 8*4 DUP(?)
+TOTAL_FINAL_PRICE   DW ?
+TOTAL_DISCOUNT      DW ?
+TOTAL_NET_PRICE     DW ?
+TOTAL_TAX           DW ?
+OUTPUT                 DB 8*4 DUP(?)
 CAT_TOTAL_FINAL_PRICE DW 4 DUP(0)
 CAT_TOTAL_TAX_DUE     DW 4 DUP(0)
 CAT_TOTAL_APPL_DISC   DW 4 DUP(0)
@@ -20,7 +20,7 @@ CAT_TOTAL_NET_PRICE   DW 4 DUP(0)
         XOR CH, CH
 
         LEA SI, PUR_OBJ
-        LEA DI, OUT
+        LEA DI, OUTPUT
 
 loop1:  MOV BX, [SI]
         XOR AX, AX
@@ -35,10 +35,10 @@ loop1:  MOV BX, [SI]
         JE smaller
         PUSH CX
         MOV CX, 14
-loop2:  SHR DX
-        RCR AX
+loop2:  SHR DX, 1
+        RCR AX, 1
         CMP DX, 0
-        JMPNE loop2
+        JNE loop2
         JMP ok
         POP CX
 smaller: PUSH CX
@@ -49,8 +49,8 @@ ok:     MOV [DI], AL
         
         PUSH CX
         MOV CX, [SI]
-        SHL CX
-        SHL CX
+        SHL CX, 1
+        SHL CX, 1
         AND CH, 3
         XOR CH, CL
         XOR CL, CH
@@ -63,7 +63,7 @@ ok:     MOV [DI], AL
         SUB BL, AH ; in BL I have the net price
         XOR BH, BH
         
-        ADD TOTAL_NET_PRICE, BL
+        ADD TOTAL_NET_PRICE, BX
         ; start calculating the total tax due
         XCHG AX, BX
         ; in BX I have the discount and in AX the net price
@@ -76,7 +76,7 @@ ok:     MOV [DI], AL
         SHL BX, 1
         SHL BX, 1
         ; now in BH I have the category
-        MOV DH, CAT_TAX[BH]
+        MOV DH, CAT_TAX[BX]
         AND DH, 00011111B
 
         XOR DL, DL
@@ -93,13 +93,13 @@ ok:     MOV [DI], AL
         XCHG BX, AX
         POP AX
         ; now I have the net price in AX and tax due in BX
-        ADD TOTAL_TAX_DUE, BX
+        ADD TOTAL_TAX, BX
         ; start calculating the final price
         ADD AX, BX
         ; in Ax I have now the final price
         ADD TOTAL_FINAL_PRICE, AX
-        ADD CAT_TOTAL_FINAL_PRICE[CX], AX
-        ADD CAT_TOTAL-_TAX_DUE[CX], BX
+        ADD CAT_TOTAL_FINAL_PRICE[BP], AX
+        ADD CAT_TOTAL_TAX_DUE[BP], BX
 
         PUSH CX
         MOV CL, 6
@@ -112,7 +112,8 @@ ok:     MOV [DI], AL
         ADD DI, 4*2
         ADD SI, 2
         POP CX
-        LOOP loop1
+        DEC CX
+        JNZ loop1
 
         ; here you should print the result
         .EXIT
