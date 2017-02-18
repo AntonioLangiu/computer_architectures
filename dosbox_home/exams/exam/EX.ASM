@@ -55,44 +55,46 @@ ok:     MOV [DI], AL
         XOR CL, CH
         XOR CH, CL
         XOR CH, CH
-        
-        XOR AH, AH
-        ADD TOTAL_NET_PRICE, AX
+        MOV BP, CX
+        ;
+        MOV AH, 0
+        ADD TOTAL_DISCOUNT, AX
         MOV BL, BYTE PTR [SI]+1
-        
         SUB BL, AL ; in BL I have the net price
         XOR BH, BH
-        
-        ADD TOTAL_DISCOUNT, BX
-        ; start calculating the total tax due
-        XCHG AX, BX
-        ; in BX I have the discount and in AX the net price
-        
-        ADD CAT_TOTAL_NET_PRICE[CX], AX
-        ADD CAT_TOTAL_APPL_DISC[CX], BX
-
-        MOV BL, BYTE PTR [SI]
-        XOR BH, BH
-        SHL BX, 1
-        SHL BX, 1
-        ; now in BH I have the category
-        MOV DH, CAT_TAX[BX]
+        ; 
+        ADD TOTAL_NET_PRICE, AX ; start calculating the total tax due
+        XCHG AX, BX ; in BX I have the discount and in AX the net price
+        ;
+        ADD CAT_TOTAL_NET_PRICE[BP], AX
+        ADD CAT_TOTAL_APPL_DISC[BP], BX
+        ;
+        MOV BL, BYTE PTR [SI] ; useless
+        XOR BH, BH ; useless
+        SHL BX, 1 ; useless
+        SHL BX, 1 ; useless
+        MOV DH, CAT_TAX[BP] ; now in BH I have the category
         AND DH, 00011111B
-
         XOR DL, DL
         SHR DX, 1
-
-        MOV BX, DX
-        MUL BX
-        ; now in DX I have the high part of the result and in AX the low part
-        ; I should divide by 100
+        ;
         PUSH AX
-        MOV BX, 100
+        MOV CL, 6
+        SHL AX, CL
+        ;
+        MOV BX, DX
+        MUL BX ; now in DX I have the high part of the result and in AX the low part and I should divide by 100
+        MOV BX, 06400H
         DIV BX
         ; now in AX I have the result
         XCHG BX, AX
+
         POP AX
         ; now I have the net price in AX and tax due in BX
+        ; but the tax needs to be shifted
+        MOV CL, 6
+        SHR BX, CL
+
         ADD TOTAL_TAX, BX
         ; start calculating the final price
         ADD AX, BX
@@ -111,6 +113,7 @@ ok:     MOV [DI], AL
         
         ADD DI, 4*2
         ADD SI, 2
+
         POP CX
         DEC CX
         JNZ loop1
