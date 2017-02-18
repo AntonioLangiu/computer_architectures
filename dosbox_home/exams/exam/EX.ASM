@@ -60,7 +60,7 @@ ok:     MOV [DI], AL
         XOR AH, AH
         ADD TOTAL_DISCOUNT, AX
         MOV BL, BYTE PTR [SI]+1
-
+        
         SUB BL, AL ; in BL I have the net price
         XOR BH, BH
         
