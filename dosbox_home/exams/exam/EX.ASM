@@ -68,7 +68,7 @@ ok:     MOV [DI], AL
         ; start calculating the total tax due
         XCHG AX, BX
         ; in BX I have the discount and in AX the net price
-         
+        
         ADD CAT_TOTAL_NET_PRICE[BP], AX
         ADD CAT_TOTAL_APPL_DISC[BP], BX
 
