@@ -62,8 +62,8 @@ ok:     MOV [DI], AL
         MOV BL, BYTE PTR [SI]+1
         SUB BL, AL ; in BL I have the net price
         XOR BH, BH
-
-        ADD TOTAL_NET_PRICE, AX
+        
+        ADD TOTAL_NET_PRICE, BX
         ; start calculating the total tax due
         XCHG AX, BX
         ; in BX I have the discount and in AX the net price
