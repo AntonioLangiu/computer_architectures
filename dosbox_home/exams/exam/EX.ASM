@@ -78,6 +78,7 @@ ok:     MOV [DI], AL
         ; now in BH I have the category
         MOV DH, CAT_TAX[BP]
         AND DH, 00011111B
+
         XOR DL, DL
         SHR DX, 1
 
@@ -86,7 +87,7 @@ ok:     MOV [DI], AL
         SHL AX, CL
 
         MOV BX, DX
-        MUL BX 
+        MUL BX
         ; now in DX I have the high part of the result and in AX the low part
         ; I should divide by 100
         MOV BX, 06400H
