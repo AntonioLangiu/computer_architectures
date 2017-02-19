@@ -1,9 +1,10 @@
         .MODEL small
         .STACK
         .DATA
-CAT_TAX DB          00H, 0BH, 019H, 05H
-NUM_PUR DB          2
-PUR_OBJ DW          02BB0H, 08B58H, 5 DUP(?)
+CAT_TAX DB          00H, 0BH, 019H, 10H
+NUM_PUR DB          8
+PUR_OBJ DW          02BB0H, 08B58H, 03AA8H, 0514H
+        DW          0F58H, 011DCH, 02BF8H, 0E300H
 ; output variables
 TOTAL_FINAL_PRICE   DW ?
 TOTAL_DISCOUNT      DW ?
@@ -41,7 +42,7 @@ loop2:  SHR DX, 1
         POP CX
         JMP ok
 smaller: PUSH CX
-        MOV CL, 6
+        MOV CL, 14
         SHR AX, CL
         POP CX
 ok:     MOV [DI], AL
@@ -121,6 +122,12 @@ ok:     MOV [DI], AL
         POP CX
         DEC CX
         JNZ loop1
+
+        NOP
+        NOP
+        NOP
+        NOP
+
 
         ; here you should print the result
         .EXIT
