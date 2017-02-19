@@ -2,7 +2,7 @@
         .STACK
         .DATA
 CAT_TAX DB          00H, 0BH, 019H, 05H
-NUM_PUR DB          2
+NUM_PUR DB          1
 PUR_OBJ DW          02BB0H, 6 DUP(?)
 ; output variables
 TOTAL_FINAL_PRICE   DW ?
@@ -65,6 +65,7 @@ ok:     MOV [DI], AL
         XOR BH, BH
         
         ADD TOTAL_NET_PRICE, BX
+        MOV [DI][1], BL
         ; start calculating the total tax due
         XCHG AX, BX
         ; in BX I have the discount and in AX the net price
@@ -109,11 +110,6 @@ ok:     MOV [DI], AL
         ADD CAT_TOTAL_FINAL_PRICE[BP], AX
         ADD CAT_TOTAL_TAX_DUE[BP], BX
 
-        PUSH CX
-        MOV CL, 6
-        SHR AX, CL
-        SHR BX, CL
-        POP CX
         MOV [DI][2], BX
         MOV [DI][3], AX
         
@@ -121,6 +117,11 @@ ok:     MOV [DI], AL
         ADD SI, 2
         POP CX
         DEC CX
+        NOP
+        NOP
+        NOP
+        NOP
+
         JNZ loop1
 
         ; here you should print the result
