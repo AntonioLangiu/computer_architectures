@@ -2,8 +2,8 @@
         .STACK
         .DATA
 CAT_TAX DB          00H, 0BH, 019H, 05H
-NUM_PUR DB          1
-PUR_OBJ DW          02BB0H, 6 DUP(?)
+NUM_PUR DB          2
+PUR_OBJ DW          02BB0H, 08B58H, 5 DUP(?)
 ; output variables
 TOTAL_FINAL_PRICE   DW ?
 TOTAL_DISCOUNT      DW ?
@@ -55,6 +55,7 @@ ok:     MOV [DI], AL
         XOR CL, CH
         XOR CH, CL
         XOR CH, CH
+        SHL CX, 1
         MOV BP, CX
         
         XOR AH, AH
@@ -77,8 +78,10 @@ ok:     MOV [DI], AL
         XOR BH, BH
         SHL BX, 1
         SHL BX, 1
+        XOR BL, BL
+        XCHG BL, BH
         ; now in BH I have the category
-        MOV DH, CAT_TAX[BP]
+        MOV DH, CAT_TAX[BX]
         AND DH, 00011111B
 
         XOR DL, DL
