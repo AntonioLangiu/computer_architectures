@@ -117,11 +117,6 @@ ok:     MOV [DI], AL
         ADD SI, 2
         POP CX
         DEC CX
-        NOP
-        NOP
-        NOP
-        NOP
-
         JNZ loop1
 
         ; here you should print the result
