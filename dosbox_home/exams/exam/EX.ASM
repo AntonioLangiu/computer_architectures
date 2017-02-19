@@ -110,10 +110,10 @@ ok:     MOV [DI], AL
         ADD CAT_TOTAL_FINAL_PRICE[BP], AX
         ADD CAT_TOTAL_TAX_DUE[BP], BX
 
-        MOV [DI][2], BX
-        MOV [DI][3], AX
+        MOV [DI][2], BL
+        MOV [DI][3], AL
         
-        ADD DI, 4*2
+        ADD DI, 4
         ADD SI, 2
         POP CX
         DEC CX
