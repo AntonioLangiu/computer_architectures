@@ -43,7 +43,7 @@ dosbox_home="$base_dir/dosbox_home/"
 
 
 # TODO check this lines
-dosbox_noscript_conf="$base_dir/noscript.conf"
+dosbox_noscript_conf="$base_dir/support_files/noscript.conf"
 dosbox_temp_conf_name="temp.conf"
 
 # proj_dir indicates the workspace folder
