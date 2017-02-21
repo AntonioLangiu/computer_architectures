@@ -1,30 +1,61 @@
+#########################################################################
+# This program is free software: you can redistribute it and/or modify  #
+# it under the terms of the GNU General Public License as published by	#
+# the Free Software Foundation, either version 3 of the License, or		#
+# (at your option) any later version.									#
+# 																		#
+# This program is distributed in the hope that it will be useful,		#
+# but WITHOUT ANY WARRANTY; without even the implied warranty of		#
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the			#
+# GNU General Public License for more details.							#
+# 																		#
+# You should have received a copy of the GNU General Public License		#
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.	#
+#																		#
+# Authors: Antonio Langiu, Edoardo Operti								#
+#########################################################################
 #!/bin/bash
 set -e
-
-# Options to be setted for the script
 base_dir=$(cd `dirname "$0"` && pwd -P)
-base_ex_dir="exams"
-proj_dir="$base_dir/dosbox_home/$base_ex_dir"
-
+#########################################################################
+#                      CONFIGURABLE OPTIONS	                            #
+# The default options will correctly work on MAC OSX                    #
+#########################################################################
+# base_ex_dir indicated the name of the folder used to store the exercises
+base_ex_dir="exercises"
+# default name for ASM files
+# remember that DOS BOX will always save them in UPPERCASE
 asm_file_name="EX.ASM"
+# default name for EXE compiled files
 exe_file_name="EX.EXE"
-c_file_name="ex.c"
-
-dosbox_exec="open -n -a DOSBOX"
-dosbox_param="--args -conf"
+# configure this instruction with the correct instruction 
+# for your operating system (this will work with OSX)
+dosbox_exec="open -n -a DOSBOX --args -conf"
+# configure the instruction that will be called to kill the DOXBOX
+# instances on your system
 dosbox_kill="killall DOSBox"
+# default editor (the called instruction will be $editor file_name, so
+# be sure that your editor is able to open a file in such way)
+editor="vim"
+# default DOS BOX mounted directory. It will be mounted as C:\
+# make sure that this folder contains a MASM 
 dosbox_home="$base_dir/dosbox_home/"
+
+
+# TODO check this lines
 dosbox_noscript_conf="$base_dir/noscript.conf"
 dosbox_temp_conf_name="temp.conf"
 
-editor="vim"
+# proj_dir indicates the workspace folder
+proj_dir="$dosbox_home/$base_ex_dir"
 
-function create {
+create() {
     if [ "$1" == "" ]; then
-        echo "you should give a name for the exercise"
+        echo "Please give a name for the exercise"
     fi
 
-    mkdir "$1" || (echo "impossible to create $1"; exit 1)
+    mkdir "$1" || (echo "Impossible to create the folder $1"; exit 1)
+	# This is the template for an assembly program compatible with MASM611
 cat <<-EOF > "$1/$asm_file_name"
         .MODEL small
         .STACK
@@ -36,49 +67,38 @@ cat <<-EOF > "$1/$asm_file_name"
         .EXIT
         END
 EOF
-    if [ "$2" == "-c" ]; then 
-cat <<EOF > "$1/$c_file_name"
-#include <stdio.h>
-#include <stdlib.h>
-
-int main(int argc, char ** argv) {
-    return 0;   
-}
-EOF
-    fi
 }
 
-function delete {
+delete() {
     if [ "$1" == "" ]; then
-        echo "you should give a name for the exercise"
+       echo "You should give a name for the exercise"
     fi
-    # TODO add check
-dosbox_noscript_conf="noscript.conf"
-    rm -r "$1" || echo "I can't remove the specified folder!"
+    rm -r "$1" || echo "I can't remove the exercise folder!"
 }
 
-function clean {
+clean() {
+    # TODO decide what to clean
     rm "$1/$dosbox_temp_conf_name"
 }
 
-function compile {
+compile() {
     if [ "$1" == "" ]; then
-        echo "you should give a name for the exercise"
+        echo "You should give a name for the exercise"
         return 
     fi
     ex_dir="$proj_dir/$1"
     # start compile asm
 }
 
-function killcmd {
+killcmd() {
     $dosbox_kill
 }
 
-function edit {
+edit() {
     $editor "$1/$asm_file_name"
 }
 
-function doc {
+doc() {
     doc="$1/README.md"
     if [ -f $doc ]; then
         if [ "$3" == "-s" ]; then
@@ -96,7 +116,7 @@ EOF
     cat <&0 >> $doc
 }
 
-function debug {
+debug() {
     if [ ! -f "$dosbox_noscript_conf" ]; then
         echo "set a correct noscript_conf file in the script"
     fi
@@ -123,7 +143,7 @@ EOF
     $cmd
 }
 
-function pwb {
+pwb() {
     if [ ! -f "$dosbox_noscript_conf" ]; then
         echo "set a correct noscript_conf file in the script"
     fi
@@ -135,11 +155,11 @@ create_temp_file $1 <<EOF
 cd $base_ex_dir\\$ex_name
 pwb $asm_file_name
 EOF
-    cmd="$dosbox_exec $dosbox_param $temp_conf"
+    cmd="$dosbox_exec $temp_conf"
     $cmd
 }
 
-function build {
+build() {
     if [ "$1" == "" ]; then
         echo "you should give a name for the exercise"
         return
@@ -148,11 +168,11 @@ create_temp_file $1 <<EOF
 cd $base_ex_dir\\$ex_name
 ml /Zi $asm_file_name
 EOF
-    cmd="$dosbox_exec $dosbox_param $temp_conf"
+    cmd="$dosbox_exec $temp_conf"
     $cmd
 }
 
-function create_temp_file {
+create_temp_file() {
     temp_conf="$1/$dosbox_temp_conf_name"
     # This will override the previous content
     cp "$dosbox_noscript_conf" "$temp_conf"
@@ -169,16 +189,28 @@ EOF
 cat <&0 >> "$temp_conf"
 }
 
-function usage {
+usage() {
     echo "usage: $0 test_name [operations]"
+	echo 
+	echo " to see all the created exercises type"
+	echo " > $0 list"
 }
 
-function commands {
+commands() {
     echo "Available operations for test $1 are:"
-    echo "  create"
-    echo "  delete"
-    echo "  debug"
-    echo "  build"
+    echo "  create  creates a new exercise template"
+    echo "  delete  delete the exercise"
+    echo "  debug   starts DOS BOX, builds and starts code view (the debugger)"
+	echo "  pwb     opens the file to edit inside MASM"
+    echo "  build   builds the EX.ASM file"
+    echo "          with -w tryies to detect and insert automatically the watches"
+    echo "  clean   cleans the exercise dir from useless files"
+    echo "  kill    kills all the running instances of DOS BOX"
+    echo "  edit    opens the EX.ASM file with the configured editor (default: vim)"
+    echo "  doc     generates a README.md file to provide documentation"
+    echo "          with -s it shows the documentation if exists"
+    echo "  rename  renames the exercise"
+    echo "  cd      opens a new shell inside the exercise folder"
 }
 
 if [ ! -d "$proj_dir" ]; then
@@ -204,19 +236,19 @@ cmd=$1
 shift
 case "$cmd" in
     create)
-        create $ex_dir $@
+        create $ex_dir
         ;;
     delete) 
-        delete $ex_dir $@
+        delete $ex_dir
         ;;
     debug)
         debug $ex_dir $@
         ;;
     pwb)
-        pwb $ex_dir $@
+        pwb $ex_dir
         ;;
     build)
-        build $ex_dir $@
+        build $ex_dir
         ;;
     clean) 
         clean $ex_dir
