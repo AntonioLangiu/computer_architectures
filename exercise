@@ -22,7 +22,7 @@ base_dir=$(cd `dirname "$0"` && pwd -P)
 # The default options will correctly work on MAC OSX                    #
 #########################################################################
 # base_ex_dir indicated the name of the folder used to store the exercises
-base_ex_dir="exercises"
+base_ex_dir="exercise"
 # default name for ASM files
 # remember that DOS BOX will always save them in UPPERCASE
 asm_file_name="EX.ASM"
