@@ -64,10 +64,13 @@ PRINTLN MACRO
 ;*******************************************;
 ;           INPUT VARIABLES                 ;
 ;*******************************************;
-CAT_TAX                 DB 00H, 0BH, 019H, 10H
+CAT_TAX                 DB 4 DUP(0)
 NUM_PUR                 DB 8
-PUR_OBJ                 DW 02BB0H, 08B58H, 03AA8H, 0514H
-                        DW 0F58H, 011DCH, 02BF8H, 0E000H
+PUR_OBJ                 DW 8 DUP(0)
+;CAT_TAX                 DB 00H, 0BH, 019H, 10H
+;NUM_PUR                 DB 8
+;PUR_OBJ                 DW 02BB0H, 08B58H, 03AA8H, 0514H
+;                        DW 0F58H, 011DCH, 02BF8H, 0E000H
 ;*******************************************;
 ;           OUTPUT VARIABLES                ;
 ;*******************************************;
@@ -114,9 +117,9 @@ CBUF                	DB 5 DUP(0)
 
         .CODE
         .STARTUP
-; TODO here you should do the input output
-; TODO first read all the
-        ;CALL READ_INPUT
+        CALL READ_INPUT
+
+        ; 122 -> 228 has been written during the examination
 
         MOV CL, NUM_PUR
         XOR CH, CH
@@ -224,8 +227,8 @@ ok:     MOV [DI], AL
         DEC CX
         JNZ loop1
 
-			CALL REPORT
-			.EXIT
+        CALL REPORT
+        .EXIT
 
 	;*******************************************;
 	;               FUNCTIONS                   ;
@@ -884,7 +887,6 @@ report_end:
 	;				PRINTFP16					;
 	; This function prints a fixed point on		;
 	; 16 bits on 2 fract. bits					;
-	; TODO da dove prende l'input?				;
 	;*******************************************;
 	PRINTFP16 PROC NEAR
 			PUSH AX
