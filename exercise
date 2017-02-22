@@ -23,32 +23,47 @@ base_dir=$(cd `dirname "$0"` && pwd -P)
 #########################################################################
 # base_ex_dir indicated the name of the folder used to store the exercises
 base_ex_dir="exercise"
+
 # default name for ASM files
 # remember that DOS BOX will always save them in UPPERCASE
 asm_file_name="EX.ASM"
+
 # default name for EXE compiled files
 exe_file_name="EX.EXE"
+
 # configure this instruction with the correct instruction 
 # for your operating system (this will work with OSX)
 dosbox_exec="open -n -a DOSBOX --args -conf"
+
 # configure the instruction that will be called to kill the DOXBOX
 # instances on your system
 dosbox_kill="killall DOSBox"
+
 # default editor (the called instruction will be $editor file_name, so
 # be sure that your editor is able to open a file in such way)
 editor="vim"
+
 # default DOS BOX mounted directory. It will be mounted as C:\
 # make sure that this folder contains a MASM 
 dosbox_home="$base_dir/dosbox_home/"
 
-
-# TODO check this lines
+# base batch to pass to DOS BOX with no default action
+# edit the parameters inside the script if you want to change the
+# settings of DOS BOX
+# this script should end with [autoexec] leaving this script the
+# possibility con concat commands to it (remember that the commands 
+# must be DOS compatible)
 dosbox_noscript_conf="$base_dir/support_files/noscript.conf"
+
+# this regex indicates the files that will be removed with the clean cmd
 dosbox_temp_conf_name="temp.conf"
 
-# proj_dir indicates the workspace folder
-proj_dir="$dosbox_home/$base_ex_dir"
+# workspace_dir indicates the workspace folder
+workspace_dir="$dosbox_home/$base_ex_dir"
 
+#########################################################################
+#                       Functions Definition                            #
+#########################################################################
 create() {
     if [ "$1" == "" ]; then
         echo "Please give a name for the exercise"
@@ -77,16 +92,11 @@ delete() {
 }
 
 clean() {
-    # TODO decide what to clean
-    rm "$1/$dosbox_temp_conf_name"
+    find $1 -type f \( -iname "*.exe" -o -iname "*.obj" -o -iname "*.conf" \) -delete
 }
 
 compile() {
-    if [ "$1" == "" ]; then
-        echo "You should give a name for the exercise"
-        return 
-    fi
-    ex_dir="$proj_dir/$1"
+    ex_dir="$workspace_dir/$1"
     # start compile asm
 }
 
@@ -120,10 +130,6 @@ debug() {
     if [ ! -f "$dosbox_noscript_conf" ]; then
         echo "set a correct noscript_conf file in the script"
     fi
-    if [ "$1" == "" ]; then
-        echo "you should give a name for the exercise"
-        return
-    fi
     val=""
     if [ "$2" == "-w" ];then
         watches=$(cat "$1/EX.ASM" | grep -E "DB|DW|[^A]DD|DQ" | cut -f 1 -d " ")
@@ -147,10 +153,6 @@ pwb() {
     if [ ! -f "$dosbox_noscript_conf" ]; then
         echo "set a correct noscript_conf file in the script"
     fi
-    if [ "$1" == "" ]; then
-        echo "you should give a name for the exercise"
-        return
-    fi
 create_temp_file $1 <<EOF
 cd $base_ex_dir\\$ex_name
 pwb $asm_file_name
@@ -160,10 +162,6 @@ EOF
 }
 
 build() {
-    if [ "$1" == "" ]; then
-        echo "you should give a name for the exercise"
-        return
-    fi
 create_temp_file $1 <<EOF
 cd $base_ex_dir\\$ex_name
 ml /Zi $asm_file_name
@@ -189,8 +187,19 @@ EOF
 cat <&0 >> "$temp_conf"
 }
 
+check_folder_existance() {
+    if [ "$1" == "" ]; then
+        echo "ERROR: The file name can't be empty"
+        exit 1
+    fi
+    if [ ! -d "$1" ]; then 
+        echo "ERROR: The exercise name must be a valid and already created exercise"
+        exit 1
+    fi
+}
+
 usage() {
-    echo "usage: $0 test_name [operations]"
+    echo "usage: $0 exercise_name [operations]"
 	echo 
 	echo " to see all the created exercises type"
 	echo " > $0 list"
@@ -213,20 +222,23 @@ commands() {
     echo "  cd      opens a new shell inside the exercise folder"
 }
 
-if [ ! -d "$proj_dir" ]; then
-    mkdir -p "$proj_dir"
+#########################################################################
+#                   Start of the script                                 #
+#########################################################################
+if [ ! -d "$workspace_dir" ]; then
+    echo -n "Creating the workspace directory.. "
+    mkdir -p "$workspace_dir" && echo "done"
 fi
-
 if [ $# -lt 1 ]; then
     usage
     exit 1
 fi
 if [ "$1" == "list" ]; then
-    ls -l $proj_dir
+    ls -l $workspace_dir
     exit 1
 fi
 ex_name="$1"
-ex_dir="$proj_dir/$ex_name"
+ex_dir="$workspace_dir/$ex_name"
 shift
 if [ $# -lt 1 ]; then
     commands $ex_name
@@ -234,38 +246,48 @@ if [ $# -lt 1 ]; then
 fi
 cmd=$1
 shift
+
 case "$cmd" in
     create)
         create $ex_dir
         ;;
     delete) 
+        check_folder_existance $ex_dir
         delete $ex_dir
         ;;
     debug)
+        check_folder_existance $ex_dir
         debug $ex_dir $@
         ;;
     pwb)
+        check_folder_existance $ex_dir
         pwb $ex_dir
         ;;
     build)
+        check_folder_existance $ex_dir
         build $ex_dir
         ;;
     clean) 
+        check_folder_existance $ex_dir
         clean $ex_dir
         ;;
     kill)
         killcmd
         ;;
     edit)
+        check_folder_existance $ex_dir
         edit $ex_dir
         ;;
     doc)
+        check_folder_existance $ex_dir
         doc $ex_dir $@
         ;;
     rename)
-        mv "$ex_dir" "$proj_dir/$1"
+        check_folder_existance $ex_dir
+        mv "$ex_dir" "$workspace_dir/$1"
         ;;
     cd)
+        check_folder_existance $ex_dir
         cd $ex_dir
         echo "type exit to return to the previous shell"
         PS1="EXERCISE:$ex_name > " bash
