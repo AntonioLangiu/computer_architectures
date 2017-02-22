@@ -1,4 +1,4 @@
-# Fast MASM
+# FastMASM
 
 In this folder you will find a ready environment to
 create, build and debug your programs with MASM.

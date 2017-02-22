@@ -37,7 +37,7 @@ dosbox_exec="open -n -a DOSBOX --args -conf"
 
 # configure the instruction that will be called to kill the DOXBOX
 # instances on your system
-dosbox_kill="killall DOSBox"
+dosbox_kill="killall DOSBOX"
 
 # default editor (the called instruction will be $editor file_name, so
 # be sure that your editor is able to open a file in such way)
