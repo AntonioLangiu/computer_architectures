@@ -25,7 +25,7 @@ base_dir=$(cd `dirname "$0"` && pwd -P)
 base_ex_dir="exercise"
 
 # default name for ASM files
-# remember that DOS BOX will always save them in UPPERCASE
+# remember that DOSBox will always save them in UPPERCASE
 asm_file_name="EX.ASM"
 
 # default name for EXE compiled files
@@ -41,15 +41,16 @@ dosbox_kill="killall DOSBox"
 
 # default editor (the called instruction will be $editor file_name, so
 # be sure that your editor is able to open a file in such way)
+# you can also set visual editor (like atom, sublime, etc)
 editor="vim"
 
-# default DOS BOX mounted directory. It will be mounted as C:\
+# default DOSBox mounted directory. It will be mounted as C:\
 # make sure that this folder contains a MASM 
 dosbox_home="$base_dir/dosbox_home/"
 
-# base batch to pass to DOS BOX with no default action
+# base batch to pass to DOSBox with no default action
 # edit the parameters inside the script if you want to change the
-# settings of DOS BOX
+# settings of DOSBox
 # this script should end with [autoexec] leaving this script the
 # possibility con concat commands to it (remember that the commands 
 # must be DOS compatible)
@@ -70,7 +71,7 @@ create() {
     fi
 
     mkdir "$1" || (echo "Impossible to create the folder $1"; exit 1)
-	# This is the template for an assembly program compatible with MASM611
+	### This is the template for an assembly program compatible with MASM611
 cat <<-EOF > "$1/$asm_file_name"
         .MODEL small
         .STACK
@@ -85,23 +86,18 @@ EOF
 }
 
 delete() {
-    if [ "$1" == "" ]; then
-       echo "You should give a name for the exercise"
-    fi
-    rm -r "$1" || echo "I can't remove the exercise folder!"
+    rm -r "$1" || echo "ERROR: I can't remove the exercise folder!"
 }
 
 clean() {
-    find $1 -type f \( -iname "*.exe" -o -iname "*.obj" -o -iname "*.conf" \) -delete
-}
-
-compile() {
-    ex_dir="$workspace_dir/$1"
-    # start compile asm
+    echo -n "Cleaning the folder from *.EXE, *.OBJ and *.conf files... "
+    find $1 -type f \( -iname "*.exe" -o -iname "*.obj" -o -iname "*.conf" \) -delete\
+        && echo "done"
 }
 
 killcmd() {
-    $dosbox_kill
+    echo -n "Killing all your dosbox instances... "
+    $dosbox_kill && echo "done"
 }
 
 edit() {
@@ -118,6 +114,12 @@ doc() {
         $editor "$doc"
         return
     fi
+    echo "Type some documentation for this exercise"
+    echo " then type Ctrl-D (EOF) to exit"
+    echo "The next time you will invoke this command it will"
+    echo " open the doc with your default editor"
+    echo ""
+    ### This is the default template for the documentation
 cat <<EOF > $doc
 # Exercise $ex_name
 
@@ -127,9 +129,7 @@ EOF
 }
 
 debug() {
-    if [ ! -f "$dosbox_noscript_conf" ]; then
-        echo "set a correct noscript_conf file in the script"
-    fi
+
     val=""
     if [ "$2" == "-w" ];then
         watches=$(cat "$1/EX.ASM" | grep -E "DB|DW|[^A]DD|DQ" | cut -f 1 -d " ")
@@ -150,9 +150,6 @@ EOF
 }
 
 pwb() {
-    if [ ! -f "$dosbox_noscript_conf" ]; then
-        echo "set a correct noscript_conf file in the script"
-    fi
 create_temp_file $1 <<EOF
 cd $base_ex_dir\\$ex_name
 pwb $asm_file_name
@@ -209,12 +206,12 @@ commands() {
     echo "Available operations for test $1 are:"
     echo "  create  creates a new exercise template"
     echo "  delete  delete the exercise"
-    echo "  debug   starts DOS BOX, builds and starts code view (the debugger)"
+    echo "  debug   starts DOSBox, builds and starts code view (the debugger)"
 	echo "  pwb     opens the file to edit inside MASM"
     echo "  build   builds the EX.ASM file"
     echo "          with -w tryies to detect and insert automatically the watches"
     echo "  clean   cleans the exercise dir from useless files"
-    echo "  kill    kills all the running instances of DOS BOX"
+    echo "  kill    kills all the running instances of DOSBox"
     echo "  edit    opens the EX.ASM file with the configured editor (default: vim)"
     echo "  doc     generates a README.md file to provide documentation"
     echo "          with -s it shows the documentation if exists"
@@ -235,6 +232,11 @@ if [ $# -lt 1 ]; then
 fi
 if [ "$1" == "list" ]; then
     ls -l $workspace_dir
+    exit 1
+fi
+
+if [ ! -f "$dosbox_noscript_conf" ]; then
+    echo "Set a correct noscript_conf file in the script"
     exit 1
 fi
 ex_name="$1"
